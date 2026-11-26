@@ -20,7 +20,8 @@ export function CampaignCard({ scenario, s, set, compact = false }: CampaignProp
   const country = COUNTRY_BY_ID[scenario.countryId];
   const selectedSide = scenario.sides.find((side) => side.id === progress.sideId);
   const selectedFaction = selectedSide?.factions.find((faction) => faction.id === progress.factionId);
-  const locked = progress.status === "resolved" || progress.operations > 0;
+  const resolved = progress.status === "resolved";
+  const selectionLocked = resolved || progress.operations > 0;
   const isArchived = scenario.years[1] < s.year;
 
   return (
@@ -61,7 +62,7 @@ export function CampaignCard({ scenario, s, set, compact = false }: CampaignProp
               Сторона
               <select
                 value={progress.sideId ?? ""}
-                disabled={locked}
+                disabled={selectionLocked}
                 onChange={(event) => {
                   const sideId = event.target.value;
                   const side = scenario.sides.find((candidate) => candidate.id === sideId);
@@ -77,7 +78,7 @@ export function CampaignCard({ scenario, s, set, compact = false }: CampaignProp
               Фракция и лидер
               <select
                 value={progress.factionId ?? ""}
-                disabled={locked || !selectedSide}
+                disabled={selectionLocked || !selectedSide}
                 onChange={(event) => selectedSide && set(selectCampaignFaction(s, scenario.id, selectedSide.id, event.target.value))}
                 className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-2 text-sm text-slate-100 outline-none focus:border-sky-500 disabled:opacity-60"
               >
@@ -104,12 +105,12 @@ export function CampaignCard({ scenario, s, set, compact = false }: CampaignProp
               <b className="text-sky-300">{Math.round(progress.support)} / 65</b>
             </div>
             <div className="mt-2"><Bar v={progress.support} max={65} color="#38bdf8" /></div>
-            <p className="mt-2 text-[11px] text-slate-500">Наберите 65 пунктов влияния: выбранная фракция победит, а лидер, правительство и идеологический курс страны обновятся. Можно также принять исторический исход.</p>
+            <p className="mt-2 text-[11px] text-slate-500">Наберите 65 пунктов влияния: выбранная фракция победит, а лидер, правительство и идеологический курс страны обновятся. После первого вмешательства фракцию изменить нельзя, но поддержку можно продолжать. Можно также принять исторический исход.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Btn kind="ghost" disabled={!selectedFaction || locked || s.st.pc < 3} onClick={() => set(interveneInCampaign(s, scenario.id, "diplomatic"))}>Дипломатия · −3 ПК / +22</Btn>
-              <Btn kind="ghost" disabled={!selectedFaction || locked || s.st.fd < 25} onClick={() => set(interveneInCampaign(s, scenario.id, "funding"))}>Финансирование · −25 млн / +34</Btn>
-              <Btn kind="ghost" disabled={!selectedFaction || locked || s.st.pc < 5 || s.st.fd < 20} onClick={() => set(interveneInCampaign(s, scenario.id, "advisers"))}>Советники · −5 ПК, −20 млн / +45</Btn>
-              <Btn kind="good" disabled={locked} onClick={() => set(finishCampaign(s, scenario.id, true))}>Принять исторический исход</Btn>
+              <Btn kind="ghost" disabled={!selectedFaction || resolved || s.st.pc < 3} onClick={() => set(interveneInCampaign(s, scenario.id, "diplomatic"))}>Дипломатия · −3 ПК / +22</Btn>
+              <Btn kind="ghost" disabled={!selectedFaction || resolved || s.st.fd < 25} onClick={() => set(interveneInCampaign(s, scenario.id, "funding"))}>Финансирование · −25 млн / +34</Btn>
+              <Btn kind="ghost" disabled={!selectedFaction || resolved || s.st.pc < 5 || s.st.fd < 20} onClick={() => set(interveneInCampaign(s, scenario.id, "advisers"))}>Советники · −5 ПК, −20 млн / +45</Btn>
+              <Btn kind="good" disabled={resolved} onClick={() => set(finishCampaign(s, scenario.id, true))}>Принять исторический исход</Btn>
             </div>
           </div>
         </>
